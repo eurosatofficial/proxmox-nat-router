@@ -4,6 +4,7 @@ set -e
 WAN_IF="vmbr0"
 LAN_IF="vmbr1"
 LAN_NET="10.0.0.0/24"
+WAN_IP="$(ip -4 -o addr show dev "$WAN_IF" scope global | awk '{split($4,a,"/"); print a[1]; exit}')"
 
 sysctl -w net.ipv4.ip_forward=1 >/dev/null
 
@@ -18,6 +19,9 @@ iptables -F MY_FWD
 iptables -t nat -C PREROUTING -i "$WAN_IF" -j MY_DNAT 2>/dev/null || \
 iptables -t nat -I PREROUTING 1 -i "$WAN_IF" -j MY_DNAT
 
+# Hairpin-DNAT: öffentliche IP auch aus dem internen Netz weiterleiten
+iptables -t nat -C PREROUTING -i "$LAN_IF" -d "$WAN_IP" -j MY_DNAT 2>/dev/null || iptables -t nat -I PREROUTING 1 -i "$LAN_IF" -d "$WAN_IP" -j MY_DNAT
+
 # Jump in FORWARD sicher an Position 1
 iptables -D FORWARD -j MY_FWD 2>/dev/null || true
 iptables -I FORWARD 1 -j MY_FWD
@@ -25,6 +29,9 @@ iptables -I FORWARD 1 -j MY_FWD
 # SNAT
 iptables -t nat -C POSTROUTING -s "$LAN_NET" -o "$WAN_IF" -j MASQUERADE 2>/dev/null || \
 iptables -t nat -A POSTROUTING -s "$LAN_NET" -o "$WAN_IF" -j MASQUERADE
+
+# Hairpin-SNAT: Rückverkehr interner DNAT-Verbindungen über den Router führen
+iptables -t nat -C POSTROUTING -s "$LAN_NET" -d "$LAN_NET" -m conntrack --ctstate DNAT -j MASQUERADE 2>/dev/null || iptables -t nat -A POSTROUTING -s "$LAN_NET" -d "$LAN_NET" -m conntrack --ctstate DNAT -j MASQUERADE
 
 # Return traffic
 iptables -A MY_FWD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
