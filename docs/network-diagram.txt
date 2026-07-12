@@ -1,0 +1,15 @@
+Internet
+   │
+   │ public IPv4
+   │
+vmbr0 / WAN
+   │
+Proxmox Host
+   │
+vmbr1 / LAN
+   │
+10.0.0.0/24
+   │
+   ├── VM / CT 10.0.0.10
+   ├── VM / CT 10.0.0.20
+   └── VM / CT 10.0.0.30
