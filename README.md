@@ -43,7 +43,7 @@ apt update && apt install -y iptables netfilter-persistent iptables-persistent
 Clone the repository:
 
 ```bash
-git clone https://github.com/USERNAME/proxmox-nat-router.git
+git clone https://github.com/eurosatofficial/proxmox-nat-router.git
 ```
 
 Change into the project directory:
