@@ -1,0 +1,28 @@
+# Dedicated two-bridge topology
+WAN_IF="vmbr0"
+LAN_IF="vmbr1"
+LAN_NET="10.0.0.0/24"
+
+# Leave empty to use the first global IPv4 address assigned to WAN_IF.
+# Set this explicitly when the WAN bridge has multiple public addresses.
+WAN_IP=""
+
+# Write /etc/sysctl.d/99-proxmox-nat-router.conf during apply.
+PERSIST_IP_FORWARD="yes"
+
+# Seconds to wait for the xtables lock held by another firewall process.
+XTABLES_WAIT="10"
+
+# Guest inventory. Use meaningful names here when CT1/CT2 is too generic.
+CT1="10.0.0.10" # SSH server
+CT2="10.0.0.20" # Web server
+CT3="10.0.0.30" # Game server
+
+# Format: "<guest-label> <tcp|udp> <external-port> <guest-ip> <guest-port>"
+PORT_FORWARDS=(
+  "CT1 tcp 2222 $CT1 22"
+  "CT2 tcp 80 $CT2 80"
+  "CT2 tcp 443 $CT2 443"
+  "CT3 tcp 25565 $CT3 25565"
+  "CT3 udp 25565 $CT3 25565"
+)

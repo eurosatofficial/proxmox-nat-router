@@ -1,15 +1,31 @@
-Internet
-   │
-   │ public IPv4
-   │
-vmbr0 / WAN
-   │
-Proxmox Host
-   │
-vmbr1 / LAN
-   │
-10.0.0.0/24
-   │
-   ├── VM / CT 10.0.0.10
-   ├── VM / CT 10.0.0.20
-   └── VM / CT 10.0.0.30
+Internet / provider gateway
+            │
+      physical WAN NIC
+            │
+    vmbr0 / public IPv4
+            │
+      Proxmox host
+   IPv4 forwarding + NAT
+            │
+    vmbr1 / 10.0.0.1/24
+            │
+   ┌────────┼────────┐
+   │        │        │
+CT1 / VM CT2 / VM CT3 / VM
+10.0.0.10 10.0.0.20 10.0.0.30
+   │        │        │
+   └── default gateway: 10.0.0.1
+
+Outbound:
+  10.0.0.0/24 → vmbr1 → MASQUERADE → vmbr0 → Internet
+
+Inbound port forward:
+  Internet → vmbr0:external-port → DNAT → guest:destination-port
+
+Hairpin port forward:
+  guest → public IPv4:external-port → DNAT + MASQUERADE → guest
+
+Scope:
+  - dedicated two-bridge IPv4 topology
+  - all guests connected to vmbr1
+  - IPv6 is not configured by this project

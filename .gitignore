@@ -9,3 +9,6 @@ Thumbs.db
 # Local notes
 *.local
 *.bak
+
+# Local router configuration
+nat-router.conf

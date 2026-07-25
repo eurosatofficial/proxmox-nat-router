@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  shell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ShellCheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+      - name: Check shell syntax
+        run: |
+          bash -n nat-router.sh
+          bash -n example/nat-router.conf.example
+          bash -n tests/smoke-test.sh
+      - name: Run ShellCheck
+        run: shellcheck nat-router.sh tests/smoke-test.sh
+      - name: Run smoke test
+        run: tests/smoke-test.sh
